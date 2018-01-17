@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam
+xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance
+xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGate
+wayParam.xsd">
+<AuthenticationReply>
+<MessageType>120</MessageType>
+<ResponseCode>50</ResponseCode>
+<ReplyMessage>Authentication Success</ReplyMessage>
+<LoginResultsURL>
+http://www.acmewisp.com/loginresults/
+</LoginResultsURL>
+<LogoffURL>http://www.acmewisp.com/logoff/</LogoffURL>
+</AuthenticationReply>
+</WISPAccessGatewayParam> 

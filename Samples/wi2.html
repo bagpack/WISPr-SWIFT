@@ -1,0 +1,544 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGatewayParam.xsd">
+<Redirect>
+<AccessProcedure>1.0</AccessProcedure>
+<AccessLocation>wi2-0000000-0000-00000000</AccessLocation>
+<LocationName>wi2</LocationName>
+<LoginURL>https://service.wi2.ne.jp/wi2net/RLogin/1/?SSID=xxxxxxxxxxxxxxxxxxxxxxxxxx</LoginURL>
+<MessageType>100</MessageType>
+<ResponseCode>0</ResponseCode>
+</Redirect>
+</WISPAccessGatewayParam>
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>
+ログイン | 公衆無線LANサービス Wi2 300
+</title>
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<meta name="keywords" content="Wi2 300,ワイヤレスブロードバンド,公衆無線LAN,街中インターネット,インターネット,ワイヤ・アンド・ワイヤレス,Wi-Fi,丸の内,無線LANアクセスポイント,アクセスポイント,無線LAN,無線LANサービス,無線LAN接続" />
+<meta name="description" content="公衆無線LANサービスWi2 300は空港、駅、丸の内、マクドナルドなど日本全国の無線LANスポットで高速インターネットを利用できるサービスです。" />
+<link rel="stylesheet" href="/wi2net/css/mypageBase.css" type="text/css" media="screen,print" />
+
+
+<link media="print,projection,screen" type="text/css" href="/wi2net/js/themes/base/ui.tabs_pc.css" rel="stylesheet">
+<!-- Cache -->
+<meta http-equiv="Pragma" content="no-cache">
+<script src="/wi2net/js/focus.js" type="text/javascript"></script>
+<script src="/wi2net/js/rollover.js" type="text/javascript"></script>
+
+<script>window['adrum start time'] = new Date().getTime();</script>
+<script src="/wi2net/js/adrum.js"></script>
+<script type="text/javascript" src="/wi2net/js/jQuery1.5.1.js"></script>
+<script type="text/javascript" src="/wi2net/js/jquery.corner.js"></script>
+<script type="text/javascript" src="/wi2net/js/ui/ui.core.js"></script>
+<script type="text/javascript" src="/wi2net/js/ui/ui.tabs.js"></script>
+<script type="text/javascript"><!--
+
+	function tabSelectIndex(args) {
+		if (args == "wi2") {
+			return 0;
+		} else if (args == "roaming") {
+			return 1;
+		} else if (args == "guest") {
+			return 2;
+		} else {
+			return 0;
+		}
+	}
+
+
+	$(function() {
+		jQuery.noConflict();
+		jQuery(document).ready(function($){
+			var elem = document.getElementById("bar-" + "wi2");
+			var index = $("div#ui-tab-pc ul li").index(elem);
+			$("#ui-tab-pc > ul").tabs({
+				selected: index
+			});
+
+			$("#ui-tab-inner > ul").tabs();
+
+			$("#dropbox").change(function(){
+
+				var data = $("#dropbox").val().split(" ");
+				roamingPSetInputType(data);
+
+				var var_h_sel_roamingP = document.getElementById('h_sel_roamingP');
+				var_h_sel_roamingP.value = document.getElementById('dropbox').selectedIndex;
+			});
+
+			$("#tabWi2").click(function() {
+				//$("#warning").css("display", "none");
+				$("#warning").slideUp(1000);
+			});
+
+			$("#tabRoaming").click(function() {
+				//$("#warning").css("display", "none");
+				$("#warning").slideUp(1000);
+			});
+
+			$("#tabGuest").click(function() {
+				//$("#warning").css("display", "none");
+				$("#warning").slideUp(1000);
+			});
+
+			$("#roamingSubmit").click(function () {
+				/*
+				var data = $("#dropbox").val().split(" ");
+				$("#roaming_loginId").attr("value",$("#roaming_loginId").val()+data[2]);
+				document.forms[1].submit();
+				*/
+
+				var data = $("#dropbox").val().split(" ");
+				var data2 = '?Roaming=1&realm=@' + data[2] + '&Password=' +  encodeURIComponent($("#roaming_password").val());
+
+				$("#formroaming").attr("action",document.forms[1].getAttribute('action') + data2);
+				document.forms[1].submit();
+			});
+
+			$("#roamingRedirect").click(function () {
+
+				var data = $("#dropbox").val().split(" ");
+				var data2 = data[1] + "?locale=jp&Roaming=1&system=wi2net&SSID=xxxxxxxxxxxxxxxxxxxxxxx&postKey=xxxxxxxxxxxxxxxxxxxxxxxxxxxx&loginUrl=https://service.wi2.ne.jp/wi2net/Wi2RoamingLogin.php";
+
+				/*$("#formroaming").attr("action",data2);
+				//$("#formroaming").attr("method","get");
+				document.forms[1].submit();*/
+
+				location.href = data2;
+			});
+		});
+	});
+
+	//キャリアにより対応するローミングパートナーのデフォルト選択制御処理の呼び出し
+	window.onload = function(){ roamingPDefaultSelect() };
+
+	//キャリアにより対応するローミングパートナーのデフォルト選択制御処理
+	function roamingPDefaultSelect(){
+
+		var var_dropbox = document.getElementById('dropbox');			//ローミングパートナーセレクトBOXのオブジェクト取得
+		var var_h_sel_roamingP = document.getElementById('h_sel_roamingP');	//ローミングパートナーで選択されているインデックス
+		var var_set_idx = 0;							//ローミングパートナーでデフォルト選択するインデックス
+		var var_idx = 0;
+
+		//ログイン画面が初期表示以外(ローミングパートナーが1回以上選択操作されている)
+		if( var_h_sel_roamingP.value != "" ){
+			//選択中のローミングパートナーのインデックスを設定(セレクトBOXの選択)
+			var_dropbox.selectedIndex = var_h_sel_roamingP.value;
+			//選択中のローミングパートナーに対応する入力フィールドの表示
+			var var_sel_value = var_dropbox.options[var_h_sel_roamingP.value].value.split(" ");
+			roamingPSetInputType(var_sel_value);
+			return;
+		}
+
+		//デフォルト選択を行う必要があるローミングパートナーの場合
+		//ローミングパートナに対応するレルム情報を取得(セレクトBOXのValueと一致する情報の取得)
+		var var_realm = "";
+		if( "0" == 1 ){
+			var_realm = "";
+		}
+		//
+		else{
+			var_realm = "";
+		}
+
+		//デフォルト選択されるローミングパートナーのインデックス判定を行う
+		if( var_realm != "" ){
+			var var_chk_realm = "";
+
+							var_idx += 1;
+				var_chk_realm = "boingo.com";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "catv-wifi";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "ct@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "cmhk@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "dialog@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "econnect.jp.wifi";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "roaming.fet.net@fetmobile@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "w-flets.jp";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "tmp.w-flets.jp";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "globe@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "globalmobile@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "ipass";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "kt@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "ft@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "pccw@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "true@aicent";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+							var_idx += 1;
+				var_chk_realm = "wig";
+
+				if (var_chk_realm == var_realm) {
+					var_set_idx = var_idx;
+				}
+					}
+
+		//ログイン画面の初期表示判定フラグの設定
+		var_h_sel_roamingP.value = var_set_idx;
+		//デフォルト選択されるローミングパートナーのインデックスを設定(セレクトBOXの選択)
+		var_dropbox.selectedIndex = var_set_idx;
+
+		//デフォルト選択されるローミングパートナーに対応する項目表示制御
+		var var_sel_value = var_dropbox.options[var_set_idx].value.split(" ");
+		//デフォルト選択されたローミングパートナーに対応する入力フィールドの表示
+		roamingPSetInputType(var_sel_value);
+
+	}
+
+	//選択中のローミングパートナーに対応する入力フィールドの表示制御処理
+	function roamingPSetInputType( sel_value ){
+
+		var var_formtag = "";
+
+		if( sel_value[0] == 1 ){
+			// 遷移先のURL情報の設定を行う
+			//「ログインID、パスワードの入力フィールド」の表示設定を行う
+			if(sel_value[1] == undefined  || sel_value[1] == null || sel_value[1] == '' ){
+				var_formtag = '/wi2net/RLogin/1/';
+			}else{
+				var_formtag = sel_value[1];
+			}
+			document.getElementById('formroaming').setAttribute("action",var_formtag);
+			document.getElementById('div_0').style.display='block';
+			document.getElementById('div_1').style.display='block';
+			document.getElementById('div_2').style.display='none';
+			document.getElementById('div_3').style.display='none';
+			document.getElementById('div_4').style.display='none';
+			document.getElementById('div_5').style.display='none';
+			document.getElementById('div_6').style.display='none';
+		} else if ( sel_value[0] == 2 ) {
+			//「ログインボタン」の表示設定を行う
+			document.getElementById('div_0').style.display='none';
+			document.getElementById('div_1').style.display='none';
+			document.getElementById('div_2').style.display='block';
+			document.getElementById('div_3').style.display='none';
+			document.getElementById('div_4').style.display='none';
+			document.getElementById('div_5').style.display='none';
+			document.getElementById('div_6').style.display='none';
+		} else if ( sel_value[0] == 3 ) {
+			// 遷移先のURL情報の設定を行う
+			//「ログインID、パスワードの入力フィールド、始めてご利用の方リンク」の表示設定を行う
+			if(sel_value[1] == undefined  || sel_value[1] == null || sel_value[1] == '' ){
+				var_formtag = '/wi2net/RLogin/1/';
+			}else{
+				var_formtag = sel_value[1];
+			}
+			document.getElementById('formroaming').setAttribute("action",var_formtag);
+			document.getElementById('div_0').style.display='block';
+			document.getElementById('div_1').style.display='block';
+			document.getElementById('div_2').style.display='none';
+			document.getElementById('div_3').style.display='block';
+			document.getElementById('div_4').style.display='inline-block';
+			document.getElementById('div_5').style.display='none';
+			document.getElementById('div_6').style.display='none';
+		 }else if(sel_value[0] == 4) {
+			// 遷移先のURL情報の設定を行う
+			//「ログインID、パスワードの入力フィールド」の表示設定を行う
+			if(sel_value[1] == undefined  || sel_value[1] == null || sel_value[1] == '' ){
+				var_formtag = '/wi2net/RLogin/1/';
+			}else{
+				var_formtag = sel_value[1];
+			}
+			var realm = '';
+			if(sel_value[2] != undefined  && sel_value[2] != null && sel_value[2] != '' ){
+				realm = '@' + sel_value[2];
+			}
+			document.getElementById('formroaming').setAttribute("action",var_formtag);
+			document.getElementById('div_0').style.display='block';
+			document.getElementById('div_1').style.display='block';
+			document.getElementById('div_2').style.display='none';
+			document.getElementById('div_3').style.display='none';
+			document.getElementById('div_4').style.display='none';
+			document.getElementById('div_5').style.display='inline-block';
+			document.getElementById('div_5').innerHTML = realm;
+			document.getElementById('div_6').style.display='block';
+		}
+	}
+
+--></script>
+</head>
+<body>
+<div id="header">
+  <div id="logo"><h1><a href="http://300.wi2.co.jp/">
+									<img src="/wi2net/images/pc_logo_wi2_300.gif" alt="Wi2 300"/>
+				</a></h1></div>
+            <div id="language">
+                <a href="/wi2net/Login/2/?locale=en&SSID=xxxxxxxxxxxxxxxxxxxxxxx&postKey=xxxxxxxxxxxxxxxxxxxxxx">
+                    <img src="/wi2net/images/lang_en.gif" alt="English" width="70" height="25" border="0" />
+                </a>
+                    </div>
+
+</div>
+<!-- #header終了 -->
+
+<!-- コンテナ部分 -->
+    <div id="wrapper">
+
+<div id="main">
+    <div id="middle-area2">
+    <div id="main-login">
+
+
+        <div id="ui-tab-pc">
+            <ul>
+                                    <li id="bar-wi2"><a href="#tab-wi2" id="tabWi2" onclick=""><span style="color: #00A0E9; margin: 0px auto; width: 100%; height:100%;">Wi2ユーザ</span></a></li>
+                                                    <li id="bar-roaming"><a href="#tab-roaming" id="tabRoaming"><span style="color: #00A0E9; margin: 0px auto; width: 100%; height:100%;">ローミング</span></a></li>
+
+                                                                </ul>
+                <div id="tab-wi2">
+            <div id="login-main-inner">
+            <form action="/wi2net/Login/1/?Wi2=1" name="login" method="post" id="formwi2" onSubmit='document.getElementById("LoginButton").disabled =true;'><input type="hidden" name="SSID" value="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" /><input type="hidden" name="postKey" value="841cc2eca99d570f7a81b337795ab54c" />
+                    <div id="frame">
+                        <div id="notification">
+                            <div id="notification_header">
+                                                                    ここはベーシックエリアです
+                                                            </div>
+                            <div id="notification_contents">
+                                                            </div>
+                        </div>
+                        <div class ="text-bold-blue">
+                            <table class="login-tbl">
+                                <tr>
+                                    <td class="login-txt">ログインID</td>
+                                    <td class="login-input"><input name="id" id="loginId" maxLength="60" value="" type="text" class="txtL" placeholder="ログインID"/>@wi2</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class ="text-bold-blue">
+                            <table class="login-tbl">
+                                <tr>
+                                    <td class="login-txt">パスワード</td>
+                                    <td class="login-input"><input name="pass" id="password" maxlength="256" type="password" class="txtL" placeholder="パスワード"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <br />
+                        <div class="btn-area-center3">
+                            <button type="button" class="btn-fnc3" onClick="location.href='https://service.wi2.ne.jp/wi2net/contents/1/?tp=introduce'">新規登録</button>
+                            <button type="button" id="LoginButton" class="btn-fnc1" id="LoginButton" onClick="this.disabled =true; document.forms[0].submit();">ログイン</button>
+                        </div>
+                        <p class="txt-12">ログインIDは、任意の文字列もしくはメールアドレスの場合がございます。<br />
+                                                        パスワードを忘れた方は、<a href="https://service2.wi2.ne.jp/wi2was/passwordResetRequestInput?locale=jp">こちら</a>（Wi2ユーザの場合のみご利用いただけます）。<br />
+                            利用規約に同意の上ログインしてください。<br />
+                            お客様情報利活用の設定は、<a href='http://wi2.co.jp/jp/mypage/'>Wi2マイページ</a>にて承ります。<br />
+                            <span class="txt-red"><!--このページはセキュリティ確保のため暗号化しております。 -->※このページはセキュリティ確保のため暗号化しております。</span>
+                        </p>
+                    </div>
+                        </form>
+            </div>
+        </div>
+                        <div id="tab-roaming">
+            <div id="login-main-inner">
+                <form action="/wi2net/Login/1/?Roaming=1" name="login" method="post" id="formroaming"><input type="hidden" name="SSID" value="xxxxxxxxxxxxxxxxxxxxxxxxxx" /><input type="hidden" name="postKey" value="xxxxxxxxxxxxxxxxxxxxxxxxxx" />
+                    <div id="frame">
+                        <noscript>
+                            <br /><br />
+                            <center>
+                                <h2>接続をクリックすると、ログイン処理を続行します。</h2>
+                                <input type="submit" value="接続">
+                            </center>
+                        </noscript>
+                        <div class ="text-bold-blue">
+                            <table class="login-tbl">
+                                <tr>
+                                    <td class="login-txt">ローミング<br />
+パートナー</td>
+                                    <td class="login-input">
+
+                                        <select id="dropbox" class="dropdown" name="roming_name" >
+                                            <option>選択してください</option>
+                                                                                            <option value="2 https://c01.client.boingo.com/uam/wi2/ boingo.com">boingo</option>
+                                                                                            <option value="1  catv-wifi">CATV</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/ct/ ct@aicent">ChinaTelecom</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/cmhk/ cmhk@aicent">CMHK</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/dialog/ dialog@aicent">Dialog</option>
+                                                                                            <option value="1  econnect.jp.wifi">エコネクト</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/fet/ roaming.fet.net@fetmobile@aicent">Far EasTone</option>
+                                                                                            <option value="4  w-flets.jp">フレッツ・スポット</option>
+                                                                                            <option value="4  tmp.w-flets.jp">フレッツ・スポット(2週間)</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/globe/ globe@aicent">Globe</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/gmc/ globalmobile@aicent">GMC</option>
+                                                                                            <option value="1  ipass">iPass</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/kt/ kt@aicent">KT</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/orange/ ft@aicent">Orange France</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/pccw/ pccw@aicent">1O1O/csl</option>
+                                                                                            <option value="2 https://service.wi2.ne.jp/wi2net/aicent/true/ true@aicent">TrueThailand</option>
+                                                                                            <option value="1  ">UQ Wi-Fiプレミアム</option>
+                                                                                            <option value="1  wig">ワイヤレスゲート</option>
+                                                                                    </select>
+                                        <input type="hidden" name="h_sel_rp" value="" id="h_sel_roamingP"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class ="text-bold-blue" id="div_0" style="display:none">
+                            <table class="login-tbl">
+                                <tr>
+                                    <td class="login-txt">ログインID</td>
+                                                                        <td class="login-input"><input name="UserName" id="roaming_loginId" maxLength="255" value="" type="text" class="txtL" placeholder="ログインID" /><div id="div_5" style="display:none"></div><div id="div_4" style="display:none"></div></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class ="text-bold-blue" id="div_1" style="display:none">
+                            <table class="login-tbl">
+                                <tr>
+                                    <td class="login-txt">パスワード</td>
+                                    <td class="login-input"><input name="roaming_Password" id="roaming_password" type="password" class="txtL"  placeholder="パスワード"/></td>
+                                </tr>
+                            </table>
+                            <table class="" id="div_3" style="display:none">
+                            <div class ="text-bold-blue">
+                                <tr>
+                                    <td class="login-link">
+
+                                                                             </td>
+                                </tr>
+                            </div>
+                            </table>
+                            <br>
+                                                        <button type="button" class="btn-fnc1" id="roamingSubmit" >ログイン</button>
+                            <br /><br />
+                            <div id="div_6" class="roaming-logo" style="display:none;">ＮＴＴ西日本「フレッツ・スポット」<br /><img src="/wi2net/images/ntt_west_logo1.png"></div>
+                        </div>
+                    </div>
+                        <div id="div_2" style="display:none">
+                            <button type="button" class="btn-fnc1" id="roamingRedirect">ログインはこちら</button><br><br>
+                        </div>
+                </form>
+            </div>
+        </div>
+                        </div>
+    </div>
+        </div><br />
+
+<div class="main-marunouchi">
+    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 5px 0;">
+        <tr>
+            <td class="marunouchi-img-td"><a href="http://300.wi2.co.jp/info/cks/"><img hspace="10" height="60" width="80" src="/wi2net/images/cks/banner_80_60.gif" style="margin-left: 60%;"></a></td>
+            <td class="marunouchi-text-td">現金でも支払いが可能な「Wi2ワンタイムチケット」好評販売中！</td>
+        </tr>
+    </table>
+</div>
+
+<div class="main-marunouchi">
+    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 5px 0;">
+        <tr>
+            <td class="marunouchi-img-td"><a href="/wi2net/contents/1/?tp=introduce&SSID=xxxxxxxxxxxxxxxxxxxxxxxxx&postKey=xxxxxxxxxxxxxxxxxxxxxx"><img hspace="10" height="60" width="80" src="/wi2net/images/index_cm_wi2.gif" style="margin-left: 60%;"></a></td>
+            <td class="marunouchi-text-td">
+                                    このエリアは<a href="http://wi2.co.jp/jp/300/price/" target="_blank">月額定額362円（税抜）</a>でのご利用がお得です
+                            </td>
+        </tr>
+    </table>
+</div>
+
+</div>    </div>
+<!-- #footer-box開始 -->
+<div id="footer">
+<div id="footer-box">
+<ul id="footer-link">
+<li><a href="http://300.wi2.co.jp/service/"><!--サービス特徴 -->サービス特徴</a></li>
+<li><a href="http://300.wi2.co.jp/area/"><!--サービスエリア -->サービスエリア</a></li>
+    <li><a href="http://300.wi2.co.jp/price/"><!--ご利用料金 -->ご利用料金</a></li>
+<li><a href="http://300.wi2.co.jp/process/"><!--ご利用手順 -->ご利用手順</a></li>
+<li><a href="http://www.wi2.co.jp/faq/"><!--よくある質問 -->よくある質問</a></li>
+<li><a href="http://300.wi2.co.jp/contact/"><!--お問い合わせ -->お問い合わせ</a></li>
+<li><a href="http://300.wi2.co.jp/rules/"><!--サービス契約約款 -->サービス契約約款</a></li>
+<li><a href="http://300.wi2.co.jp/privacy/"><!--プライバシーポリシー -->プライバシーポリシー</a></li>
+<li class="last"><a href="http://www.wi2.co.jp/" target="_blank"><!--運営会社 -->運営会社</a></li>
+</ul>
+<p><img src="/wi2net/images/copyright.gif" width="280" height="12" alt="Copyright WIRE AND WIRELESS All rights reserved." /></p>
+</div>
+<!-- #footer-box終了 -->
+</div>
+<!-- #footer終了 -->
+</body>
+</html>

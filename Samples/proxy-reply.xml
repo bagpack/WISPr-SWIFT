@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam
+xmlns:xsi=”http://www.w3.org/2001/XMLSchema-instance”
+xsi:noNamespaceSchemaLocation=
+"http://www.acmewisp.com/WISPAccessGatewayParam.xsd">
+<Proxy>
+<MessageType>110</MessageType>
+<NextURL>http://www.acmewisp.com/proxypoll</NextURL>
+<ResponseCode>200</ResponseCode>
+<Delay>5</Delay>
+</Proxy>
+</WISPAccessGatewayParam>
