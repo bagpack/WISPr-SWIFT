@@ -34,7 +34,7 @@ enum ResponseCode: Int {
     case accessGatewayInternalError = 255
 }
 
-struct Payload {
+public struct Payload {
     let loginURL: String?
     let logoffURL: String?
     let nextURL: String?
@@ -61,7 +61,7 @@ struct Payload {
 
 extension Payload: Decodable {
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         loginURL = try? values.decode(String.self, forKey: .loginURL)
         logoffURL = try? values.decode(String.self, forKey: .logoffURL)

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Result {
+public enum Result {
     case success(payload: Payload)
     case failure(error: Error)
 }

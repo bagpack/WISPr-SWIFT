@@ -7,18 +7,18 @@
 
 import Foundation
 
-enum WISPrError: Error {
+public enum WISPrError: Error {
     case unknownPayload
     case notFoundPayload
     case missingParamter
     case logoffFailed
 }
 
-class WISPrClient {
+public class WISPrClient {
 
     static let userAgent: String =
     "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1"
-    static let wellKnownWebPage = "http://www.apple.com/library/test/success.html"
+    public static let wellKnownWebPage = "http://www.apple.com/library/test/success.html"
 
     /// Attempt to authenticate WISPr network.
     ///
@@ -27,7 +27,7 @@ class WISPrClient {
     ///   - username: network username
     ///   - password: network password
     ///   - completion: callback handler
-    func login(url: String = WISPrClient.wellKnownWebPage, username: String, password: String, completion: @escaping (Result) -> Void) {
+    public func login(url: String = WISPrClient.wellKnownWebPage, username: String, password: String, completion: @escaping (Result) -> Void) {
         loginFunc(username: username, password: password)(url, completion)
     }
 
@@ -36,7 +36,7 @@ class WISPrClient {
     /// - Parameters:
     ///   - logoffURL: logoffURL is included in payload
     ///   - completion: callback handler
-    func logoff(logoffURL: String, completion: @escaping (Result) -> Void) {
+    public func logoff(logoffURL: String, completion: @escaping (Result) -> Void) {
         request(url: logoffURL) { result in
             switch result {
             case let .success(payload: payload):
