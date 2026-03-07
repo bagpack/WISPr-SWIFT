@@ -1,27 +1,10 @@
-//
-//  PayloadParserTests.swift
-//  wispr-swiftTests
-//
-//  Created by bagpack on 2018/01/17.
-//
-
 import XCTest
+@testable import WISPrSwift
 
-@testable import wispr_swift
-
-class PayloadParserTests: XCTestCase, TestBundleUsable {
-    
-    override func setUp() {
-        super.setUp()
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
+final class PayloadParserTests: XCTestCase, TestBundleUsable {
 
     func testParseHtmlWi2() {
-        let html = readBundle(forResource: "Samples/wi2", withExtension: "html")
+        let html = readFixture(forResource: "wi2", withExtension: "html")
         let payload = PayloadParser.parse(html: html)
         XCTAssertEqual(payload?.loginURL, "https://service.wi2.ne.jp/wi2net/RLogin/1/?SSID=xxxxxxxxxxxxxxxxxxxxxxxxxx")
         XCTAssertEqual(payload?.messageType, MessageType.initialRedirectMessage)
@@ -29,14 +12,14 @@ class PayloadParserTests: XCTestCase, TestBundleUsable {
     }
 
     func testParseHtmlWi2Logoff() {
-        let html = readBundle(forResource: "Samples/wi2-logoff", withExtension: "html")
+        let html = readFixture(forResource: "wi2-logoff", withExtension: "html")
         let payload = PayloadParser.parse(html: html)
         XCTAssertEqual(payload?.messageType, MessageType.logoffNotification)
         XCTAssertEqual(payload?.responseCode, ResponseCode.logoffSucceeded)
     }
 
     func testParseXMLRedirectReply() {
-        let xml = readBundle(forResource: "Samples/redirect-reply", withExtension: "xml")
+        let xml = readFixture(forResource: "redirect-reply", withExtension: "xml")
         let dic = PayloadParser.parse(xml: xml)
         XCTAssertEqual(dic["AccessProcedure"], "1.0")
         XCTAssertEqual(dic["AccessLocation"], "12")
@@ -53,7 +36,7 @@ class PayloadParserTests: XCTestCase, TestBundleUsable {
     }
 
     func testParseXMLProxyReply() {
-        let xml = readBundle(forResource: "Samples/proxy-reply", withExtension: "xml")
+        let xml = readFixture(forResource: "proxy-reply", withExtension: "xml")
         let dic = PayloadParser.parse(xml: xml)
         XCTAssertEqual(dic["MessageType"], "110")
         XCTAssertEqual(dic["NextURL"], "http://www.acmewisp.com/proxypoll")
@@ -68,7 +51,7 @@ class PayloadParserTests: XCTestCase, TestBundleUsable {
     }
 
     func testParseXMLLoginSuccessfull() {
-        let xml = readBundle(forResource: "Samples/login-successful", withExtension: "xml")
+        let xml = readFixture(forResource: "login-successful", withExtension: "xml")
         let dic = PayloadParser.parse(xml: xml)
         XCTAssertEqual(dic["MessageType"], "120")
         XCTAssertEqual(dic["ResponseCode"], "50")
@@ -83,7 +66,7 @@ class PayloadParserTests: XCTestCase, TestBundleUsable {
     }
 
     func testParseXMLLoginRejected() {
-        let xml = readBundle(forResource: "Samples/login-rejected", withExtension: "xml")
+        let xml = readFixture(forResource: "login-rejected", withExtension: "xml")
         let dic = PayloadParser.parse(xml: xml)
         XCTAssertEqual(dic["MessageType"], "120")
         XCTAssertEqual(dic["ResponseCode"], "100")

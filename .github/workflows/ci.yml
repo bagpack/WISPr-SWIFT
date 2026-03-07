@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests with coverage
+        run: swift test --enable-code-coverage -Xswiftc -warnings-as-errors
+
+      - name: Summarize coverage (Sources/WISPrSwift)
+        run: |
+          set -euo pipefail
+          PROFDATA="$(find .build -type f -name default.profdata | head -n 1)"
+          TEST_BINARY="$(find .build -type f -path '*/WISPrSwiftPackageTests.xctest/Contents/MacOS/WISPrSwiftPackageTests' | head -n 1)"
+          if [ -z "$PROFDATA" ] || [ -z "$TEST_BINARY" ]; then
+            {
+              echo "### Coverage"
+              echo ""
+              echo "Coverage (Sources/WISPrSwift): 算出不可"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          xcrun llvm-cov export -format=lcov "$TEST_BINARY" -instr-profile "$PROFDATA" > coverage.lcov
+          COVERAGE="$(
+            awk '
+              BEGIN { in_source = 0; total = 0; hit = 0 }
+              /^SF:/ {
+                in_source = index($0, "Sources/WISPrSwift/") > 0
+                next
+              }
+              /^DA:/ && in_source {
+                split($0, a, ":")
+                split(a[2], b, ",")
+                total++
+                if (b[2] > 0) hit++
+                next
+              }
+              END {
+                if (total == 0) {
+                  print "NA"
+                } else {
+                  printf "%.2f", (hit / total) * 100
+                }
+              }
+            ' coverage.lcov
+          )"
+          {
+            echo "### Coverage"
+            echo ""
+            if [ "$COVERAGE" = "NA" ]; then
+              echo "Coverage (Sources/WISPrSwift): 算出不可"
+            else
+              echo "Coverage (Sources/WISPrSwift): ${COVERAGE}%"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

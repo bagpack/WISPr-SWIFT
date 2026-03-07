@@ -1,15 +1,45 @@
-WISPr-SWIFT
-=======
+# WISPrSwift
 
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/hsylife/SwiftyPickerPopover)
-[![Build Status](https://travis-ci.org/bagpack/WISPr-SWIFT.svg?branch=master)](https://travis-ci.org/bagpack/WISPr-SWIFT)
-[![codecov](https://codecov.io/gh/bagpack/WISPr-SWIFT/branch/master/graph/badge.svg)](https://codecov.io/gh/bagpack/WISPr-SWIFT)
+[![CI](https://github.com/bagpack/WISPr-SWIFT/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/bagpack/WISPr-SWIFT/actions/workflows/ci.yml)
+[![SPM compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
 
+WISPrSwift は、WISPr認証ネットワーク向けのSwiftライブラリです。
 
-WISPr-SWIFT is WISPr Smart Client without the need for the user to manually type in his/her credentials.
+## 要件
+
+- Swift 6
+- Xcode（最新推奨）
+- iOS 13 以降
+
+## プライバシーマニフェスト
+
+本ライブラリは `PrivacyInfo.xcprivacy` を同梱しています。
+ファイルは [PrivacyInfo.xcprivacy](Sources/WISPrSwift/PrivacyInfo.xcprivacy) にあり、Swift Package の `WISPrSwift` ターゲットへリソースとして組み込まれます。
+
+### Required Reason API について
+
+現行実装（`Sources/WISPrSwift`）では、Apple の Required Reason API カテゴリに該当するAPI利用は確認されていません。
+そのため `NSPrivacyAccessedAPITypes` は空配列としています。
+
+## インストール（Swift Package Manager）
+
+`Package.swift` に依存を追加してください。
 
 ```swift
-WISPrClient().login(username: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxx@xxxxx@xxx", password: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx") { (result) in
+.package(url: "https://github.com/bagpack/WISPr-SWIFT.git", from: "0.2.0")
+```
+
+利用側ターゲットの dependency に `WISPrSwift` を追加します。
+
+## 使い方
+
+```swift
+import WISPrSwift
+
+WISPrClient().login(
+    username: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxx@xxxxx@xxx",
+    password: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
+) { result in
     switch result {
     case .success(let payload):
         print(payload)
@@ -19,22 +49,22 @@ WISPrClient().login(username: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxx@xxxxx@xxx"
 }
 ```
 
-### Requirements ###
+## 開発用コマンド
 
-* Swift 4.0 or later
-
-### Confirmed SSID ###
-
-Confirmed with the following SSID.
-
-* Wi2
-
-### Installation ###
-
-Add the following line to your Cartfile.
-
-```
-github "bagpack/WISPr-SWIFT" ~> 0.1.0
+```bash
+swift package reset
+swift build -Xswiftc -warnings-as-errors
+swift test -Xswiftc -warnings-as-errors
 ```
 
-Then run carthage update. For details, please see [here](https://github.com/Carthage/Carthage).
+カバレッジは GitHub Actions の Job Summary で確認できます。
+
+## ディレクトリ構成
+
+```text
+Sources/
+  WISPrSwift/
+Tests/
+  WISPrSwiftTests/
+  Fixtures/
+```
