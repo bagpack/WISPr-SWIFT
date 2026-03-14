@@ -72,8 +72,32 @@ extension Payload: Decodable {
         } else {
             self.delay = nil
         }
-        messageType = MessageType(rawValue: Int(try values.decode(String.self, forKey: .messageType)) ?? -1)!
-        responseCode = ResponseCode(rawValue: Int( try values.decode(String.self, forKey: .responseCode)) ?? -1)!
+
+        let messageTypeValue = try values.decode(String.self, forKey: .messageType)
+        guard
+            let rawMessageType = Int(messageTypeValue),
+            let messageType = MessageType(rawValue: rawMessageType)
+        else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .messageType,
+                in: values,
+                debugDescription: "Unknown MessageType: \(messageTypeValue)"
+            )
+        }
+        self.messageType = messageType
+
+        let responseCodeValue = try values.decode(String.self, forKey: .responseCode)
+        guard
+            let rawResponseCode = Int(responseCodeValue),
+            let responseCode = ResponseCode(rawValue: rawResponseCode)
+        else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .responseCode,
+                in: values,
+                debugDescription: "Unknown ResponseCode: \(responseCodeValue)"
+            )
+        }
+        self.responseCode = responseCode
     }
 }
 

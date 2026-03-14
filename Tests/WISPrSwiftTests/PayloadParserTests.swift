@@ -80,4 +80,14 @@ final class PayloadParserTests: XCTestCase, TestBundleUsable {
         XCTAssertEqual(payload.logoffURL, "http://www.acmewisp.com/logoff/")
         XCTAssertEqual(payload.responseCode, .loginFailed)
     }
+
+    func testParseXMLUnknownMessageTypeReturnsNil() {
+        let xml = readFixture(forResource: "unknown-message-type", withExtension: "xml")
+        XCTAssertNil(PayloadParser.parse(html: xml))
+    }
+
+    func testParseXMLUnknownResponseCodeReturnsNil() {
+        let xml = readFixture(forResource: "unknown-response-code", withExtension: "xml")
+        XCTAssertNil(PayloadParser.parse(html: xml))
+    }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam
+xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance
+xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGate
+wayParam.xsd">
+<Proxy>
+<AccessProcedure>1.0</AccessProcedure>
+<LocationName>ACMEWISP</LocationName>
+<NextURL>http://exa mple.com</NextURL>
+<MessageType>110</MessageType>
+<ResponseCode>200</ResponseCode>
+<Delay>0</Delay>
+</Proxy>
+</WISPAccessGatewayParam>

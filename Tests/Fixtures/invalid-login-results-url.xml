@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam
+xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance
+xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGate
+wayParam.xsd">
+<AuthenticationPollReply>
+<AccessProcedure>1.0</AccessProcedure>
+<LocationName>ACMEWISP</LocationName>
+<LoginResultsURL>http://exa mple.com</LoginResultsURL>
+<MessageType>140</MessageType>
+<ResponseCode>201</ResponseCode>
+<Delay>0</Delay>
+</AuthenticationPollReply>
+</WISPAccessGatewayParam>

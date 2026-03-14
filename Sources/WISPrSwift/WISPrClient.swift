@@ -1,10 +1,11 @@
 import Foundation
 
-public enum WISPrError: Error {
+public enum WISPrError: Error, Equatable {
     case unknownPayload
     case notFoundPayload
     case missingParamter
     case logoffFailed
+    case invalidURL(String)
 }
 
 public class WISPrClient: @unchecked Sendable {
@@ -95,16 +96,20 @@ public class WISPrClient: @unchecked Sendable {
         loginURL: String,
         completion: CompletionBox
     ) {
-        let url = URL(string: loginURL)!
+        guard let url = validURL(from: loginURL) else {
+            completion.closure(Result.failure(error: WISPrError.invalidURL(loginURL)))
+            return
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue(WISPrClient.userAgent, forHTTPHeaderField: "User-Agent")
+        request.addValue("application/x-www-form-urlencoded; charset=utf-8", forHTTPHeaderField: "Content-Type")
         let parameters = [
-            "UserName": username,
-            "Password": password,
-            "button": "Login",
-            "FNAME": "0",
-            "OriginatingServer": WISPrClient.wellKnownWebPage
+            ("UserName", username),
+            ("Password", password),
+            ("button", "Login"),
+            ("FNAME", "0"),
+            ("OriginatingServer", WISPrClient.wellKnownWebPage)
         ]
         request.httpBody = queryString(from: parameters).data(using: .utf8)
 
@@ -132,15 +137,22 @@ public class WISPrClient: @unchecked Sendable {
         task.resume()
     }
 
-    private func queryString(from dictionary: [String: String]) -> String {
-        dictionary.enumerated().reduce("") { input, tuple in
-            let value = tuple.element.value.addingPercentEncoding(withAllowedCharacters: NSCharacterSet.urlQueryAllowed) ?? ""
-            return input + tuple.element.key + "=" + value + (dictionary.count - 1 > tuple.offset ? "&" : "")
+    private func queryString(from parameters: [(String, String)]) -> String {
+        parameters.map { key, value in
+            let encodedKey = formURLEncoded(key)
+            let encodedValue = formURLEncoded(value)
+            return encodedKey + "=" + encodedValue
         }
+        .joined(separator: "&")
     }
 
     private func request(url: String, completion: @escaping @Sendable (Result) -> Void) {
-        var request = URLRequest(url: URL(string: url)!)
+        guard let validURL = validURL(from: url) else {
+            completion(Result.failure(error: WISPrError.invalidURL(url)))
+            return
+        }
+
+        var request = URLRequest(url: validURL)
         request.addValue(WISPrClient.userAgent, forHTTPHeaderField: "User-Agent")
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -160,5 +172,27 @@ public class WISPrClient: @unchecked Sendable {
             }
         }
         task.resume()
+    }
+
+    private func validURL(from string: String) -> URL? {
+        guard let url = URL(string: string), url.scheme != nil, url.host != nil else {
+            return nil
+        }
+        return url
+    }
+
+    private func formURLEncoded(_ string: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._*"))
+        return string.unicodeScalars.map { scalar in
+            if allowed.contains(scalar) {
+                return String(scalar)
+            }
+            if scalar == " " {
+                return "%20"
+            }
+            let utf8Bytes = String(scalar).utf8.map { String(format: "%%%02X", $0) }
+            return utf8Bytes.joined()
+        }
+        .joined()
     }
 }

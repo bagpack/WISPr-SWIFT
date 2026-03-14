@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WISPAccessGatewayParam xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.acmewisp.com/WISPAccessGatewayParam.xsd">
+  <AccessProcedure>1.0</AccessProcedure>
+  <LocationName>ACMEWISP</LocationName>
+  <MessageType>100</MessageType>
+  <ResponseCode>999</ResponseCode>
+</WISPAccessGatewayParam>
